@@ -173,7 +173,60 @@ namespace RSSELI007{
                 }
                 return *this;
             }
+            // write to output file
+            virtual void write(std::string outputFile) {
 
+            }
+
+            // add two audio clips
+            virtual AudioBase & add(const AudioBase * audio) {
+                
+            }
+
+            // remove samples over range
+            virtual AudioBase & cut(int start, int end) {
+                
+            }
+
+            // add samples over range
+            virtual AudioBase & radd(const AudioBase * audio, int start, int end) {
+
+            }
+
+            // concatenate audio clips
+            virtual AudioBase & cat(const AudioBase * audio) {
+                
+            }
+
+            // volume factor over range
+            virtual AudioBase & v(int start, int end) {
+                
+            }
+
+            // reverse audio
+            virtual AudioBase & rev() {
+                
+            }
+
+            // root-mean-square of audio
+            virtual AudioBase & rms() {
+                
+            }
+
+            // normalise over range
+            virtual AudioBase & norm(float start, float end) {
+                
+            }
+
+            // fade in 
+            virtual AudioBase & fadeIn() {
+                
+            }
+
+            // fade out
+            virtual AudioBase & fadeOut() {
+                
+            }
     };
 }
 #endif
