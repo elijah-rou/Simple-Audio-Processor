@@ -1,4 +1,4 @@
-#ifdef AUDIO_H
+#ifndef AUDIO_H
 #define AUDIO_H
 
 #include <vector>
@@ -6,20 +6,37 @@
 #include <fstream>
 
 namespace RSSELI007{
-    template <typename sample_type, int channel=1> class Audio{
+   
+    class AudioBase{
+        protected:
+            int bitrate;
+            std::string filename;
+        public:
+            AudioBase() = delete;
+            AudioBase(int bitpsec, std::string file) 
+            :   bitrate(bitpsec),
+                filename(file){}
+
+            virtual ~AudioBase(){
+                bitrate = 0;
+                filename = "";
+            }
+
+    }; 
+   
+    template <typename sample_type, int channel=1> class Audio : AudioBase{
         private:
             std::vector<sample_type> data;
-            int bitrate;
         public:
             Audio() = delete;
 
-            Audio(std::string filename, int bitpsec){
-                this->bitrate = bitpsec;
-                ifstream file("input/"+filename, std::ios::binary);
-                if(file.open()){
+            Audio(std::string filename, int bitpsec)
+            :   AudioBase(bitpsec, filename){
+                std::fstream file("input/"+filename, std::ios::binary);
+                if(file.good()){
                     file.seekg(0, std::ios::end);
                     size_t size = file.tellg();
-                    file.seekg(0, std::ios::begin);
+                    file.seekg(0, std::ios::beg);
                     file.read(data, size);
                 }
             }
@@ -58,20 +75,19 @@ namespace RSSELI007{
                 }
                 return *this;
             }
-    }
+    };
 
-    template <typename sample_type> class Audio<sample_type, 2>{
+    template <typename sample_type> class Audio<sample_type, 2> : AudioBase(){
         private:
             std::vector<std::pair<sample_type, sample_type> > data;
-
         public:
             Audio(std::string filename, int bitpsec){
                 this->bitrate = bitpsec;
-                ifstream file("input/"+filename, std::ios::binary);
-                if(file.open()){
+                std::ifstream file("input/"+filename, std::ios::binary);
+                if(file.good()){
                     file.seekg(0, std::ios::end);
                     size_t size = file.tellg();
-                    file.seekg(0, std::ios::begin);
+                    file.seekg(0, std::ios::beg);
                     sample_type * temp;
                     file.read(temp, size);
                     for(int i=0; i<size; i+=2){
@@ -80,6 +96,6 @@ namespace RSSELI007{
                     }
                 }
             }
-    }
+    };
 }
 #endif
