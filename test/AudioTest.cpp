@@ -8,8 +8,6 @@
 using namespace RSSELI007;
 using namespace std;
 
-Image image1("Lenna_standard.pgm");
-
 
 TEST_CASE("Constructors"){
 
