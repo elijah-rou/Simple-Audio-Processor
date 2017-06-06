@@ -47,21 +47,23 @@ namespace RSSELI007{
                 audio.data = NULL;
             }
 
-            Audio<sample_type, channel> & operator=(const Audio<sample_type, channel> & audio){
+            virtual AudioBase & operator=(const AudioBase & audio){
                 if(this != &audio){
-                    this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
-                    this->AudioBase::filename = audio.AudioBase::filename;
-                    this->data = std::vector<sample_type>(audio.data.size());
-                    copy(audio.data.begin(), audio.data.end(), audio.data.size());
+                    Audio<sample_type, channel> a = dynamic_cast<Audio<sample_type, channel> >audio;
+                    this->AudioBase::sampleRate = a.AudioBase::sampleRate;
+                    this->AudioBase::filename = a.AudioBase::filename;
+                    this->data = std::vector<sample_type>(a.data.size());
+                    copy(a.data.begin(), a.data.end(), a.data.size());
                 }
                 return *this;
             }
 
-            Audio<sample_type, channel> & operator=(Audio<sample_type, channel> & audio){
+            virtual AudioBase & operator=(AudioBase && audio){
                 if(this != &audio){
-                    this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
-                    this->AudioBase::filename = std::move(audio.AudioBase::filename);
-                    this->data = audio.data;
+                    Audio<sample_type, channel> a = dynamic_cast<Audio<sample_type, channel> >audio;
+                    this->AudioBase::sampleRate = a.AudioBase::sampleRate;
+                    this->AudioBase::filename = std::move(a.AudioBase::filename);
+                    this->data = a.data;
                     audio.sampleRate = 0;
                     audio.data = NULL;
                 }
@@ -83,63 +85,74 @@ namespace RSSELI007{
                     }
                 }
             }
+        
+            //OVERLOADS
 
+            // add
             virtual AudioBase & operator+=(const AudioBase & audio){
 
             }
+            virtual AudioBase * operator+(const AudioBase & audio){
 
-            // add two audio clips
-            virtual AudioBase & add(const AudioBase * audio) {
+            }
+
+            // volume factor
+            virtual AudioBase & operator*=(std::pair<float, float> scaleFactor){
+
+            }
+            virtual AudioBase * operator*(std::pair<float, float> scaleFactor){
+
+            }
+
+            // concatenate
+            virtual AudioBase & operator|=(const AudioBase & audio){
+
+            }
+            virtual AudioBase * operator|(const AudioBase & audio){
+
+            }
+
+            //cut
+            virtual AudioBase & operator^=(const std::pair<int, int> range){
+                
+            }
+            virtual AudioBase * operator^(const std::pair<int, int> range){
                 
             }
 
-            // remove samples over range
-            virtual AudioBase & cut(int start, int end) {
-                
+            // reverse
+            virtual AudioBase * operator!(){
+
             }
+
+            // METHODS
 
             // add samples over range
-            virtual AudioBase & radd(const AudioBase * audio, int start, int end) {
+            virtual AudioBase * radd(const AudioBase * audio, int start, int end) {
 
-            }
-
-            // concatenate audio clips
-            virtual AudioBase & cat(const AudioBase * audio) {
-                
-            }
-
-            // volume factor over range
-            virtual AudioBase & v(int start, int end) {
-                
-            }
-
-            // reverse audio
-            virtual Audio<sample_type, channel> & rev() {
-                //Audio<sample_type, channel> * a = new Audio<sample_type, channel>(*this);
-                //return *a; 
-                //return new Audio<sample_type, channel>(*this);
             }
 
             // root-mean-square of audio
-            virtual AudioBase & rms() {
+            virtual AudioBase * rms() {
                 
             }
 
             // normalise over range
-            virtual AudioBase & norm(float start, float end) {
+            virtual AudioBase * norm(float start, float end) {
                 
             }
 
             // fade in 
-            virtual AudioBase & fadeIn() {
+            virtual AudioBase * fadeIn() {
                 
             }
 
             // fade out
-            virtual AudioBase & fadeOut() {
+            virtual AudioBase * fadeOut() {
                 
             }
-    };
+ 
+   };
 
     template <typename sample_type> class Audio<sample_type, 2> : public AudioBase{
         private:
@@ -174,7 +187,7 @@ namespace RSSELI007{
                 audio.data = NULL;
             }
 
-            Audio & operator=(const Audio & audio){
+            virtual AudioBase & operator=(const AudioBase & audio){
                 std::cout << "Copy assignment" <<  std::endl;
                 if(this != &audio){
                     this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
@@ -185,7 +198,7 @@ namespace RSSELI007{
                 return *this;
             }
 
-            Audio & operator=(Audio & audio){
+            virtual AudioBase & operator=(AudioBase && audio){
                 if(this != &audio){
                     this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
                     this->AudioBase::filename = std::move(audio.AudioBase::filename);
@@ -203,57 +216,70 @@ namespace RSSELI007{
             virtual void write(std::string outputFile) {
 
             }
+
+            //OVERLOADS
+
+            // add
             virtual AudioBase & operator+=(const AudioBase & audio){
 
             }
+            virtual AudioBase * operator+(const AudioBase & audio){
 
-            // add two audio clips
-            virtual AudioBase & add(const AudioBase * audio) {
+            }
+
+            // volume factor
+            virtual AudioBase & operator*=(std::pair<float, float> scaleFactor){
+
+            }
+            virtual AudioBase * operator*(std::pair<float, float> scaleFactor){
+
+            }
+
+            // concatenate
+            virtual AudioBase & operator|=(const AudioBase & audio){
+
+            }
+            virtual AudioBase * operator|(const AudioBase & audio){
+
+            }
+
+            //cut
+            virtual AudioBase & operator^=(const std::pair<int, int> range){
+                
+            }
+            virtual AudioBase * operator^(const std::pair<int, int> range){
                 
             }
 
-            // remove samples over range
-            virtual AudioBase & cut(int start, int end) {
-                
+            // reverse
+            virtual AudioBase * operator!(){
+
             }
+
+            // METHODS
 
             // add samples over range
-            virtual AudioBase & radd(const AudioBase * audio, int start, int end) {
+            virtual AudioBase * radd(const AudioBase * audio, int start, int end) {
 
-            }
-
-            // concatenate audio clips
-            virtual AudioBase & cat(const AudioBase * audio) {
-                
-            }
-
-            // volume factor over range
-            virtual AudioBase & v(int start, int end) {
-                
-            }
-
-            // reverse audio
-            virtual AudioBase & rev() {
-                 
             }
 
             // root-mean-square of audio
-            virtual AudioBase & rms() {
+            virtual AudioBase * rms() {
                 
             }
 
             // normalise over range
-            virtual AudioBase & norm(float start, float end) {
+            virtual AudioBase * norm(float start, float end) {
                 
             }
 
             // fade in 
-            virtual AudioBase & fadeIn() {
+            virtual AudioBase * fadeIn() {
                 
             }
 
             // fade out
-            virtual AudioBase & fadeOut() {
+            virtual AudioBase * fadeOut() {
                 
             }
     };

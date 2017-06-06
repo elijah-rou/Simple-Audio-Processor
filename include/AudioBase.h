@@ -19,6 +19,10 @@ namespace RSSELI007{
                 filename = "";
             }
 
+            // Copy/Move Assignment
+            virtual AudioBase & operator=(const AudioBase & audio) = 0;
+            virtual AudioBase & operator=(AudioBase && audio) = 0;
+
             // getters
             int getSampleRate(){
                 return this->sampleRate;
@@ -29,41 +33,46 @@ namespace RSSELI007{
             virtual int dataPieces() = 0;
 
             //OVERLOAD
-            virtual AudioBase & operator+=(const AudioBase & audio) = 0;
 
+            // add audio objects
+            virtual AudioBase & operator+=(const AudioBase & audio) = 0;
+            virtual AudioBase * operator+(const AudioBase & audio) = 0;
+
+            // apply volume factor to scale channels
+            virtual AudioBase & operator*=(const std::pair<float, float> scaleFactor) = 0;
+            virtual AudioBase * operator*(const std::pair<float, float> scaleFactor) = 0;
+
+            // concatenate 2 audio objects
+            virtual AudioBase & operator|=(const AudioBase & audio) = 0;
+            virtual AudioBase * operator|(const AudioBase & audio) = 0;
+
+            // cut a range of data from audio object
+            virtual AudioBase & operator^=(const std::pair<int, int> range) = 0;
+            virtual AudioBase * operator^(const std::pair<int, int> range) = 0;
+
+            // reverse
+            virtual AudioBase * operator!() = 0;
+
+        
+            //METHODS
 
             // write to output file
             virtual void write(std::string outputFile) = 0;
 
-            // add two audio clips
-            virtual AudioBase & add(const AudioBase * audio) = 0;
-
-            // remove samples over range
-            virtual AudioBase & cut(int start, int end) = 0;
-
             // add samples over range
-            virtual AudioBase & radd(const AudioBase * audio, int start, int end) = 0;
-
-            // concatenate audio clips
-            virtual AudioBase & cat(const AudioBase * audio) = 0;
-
-            // volume factor over range
-            virtual AudioBase & v(int start, int end) = 0;
-
-            // reverse audio
-            virtual AudioBase & rev() = 0;
+            virtual AudioBase * radd(const AudioBase * audio, int start, int end) = 0;
 
             // root-mean-square of audio
-            virtual AudioBase & rms() = 0;
+            virtual AudioBase * rms() = 0;
 
             // normalise over range
-            virtual AudioBase & norm(float start, float end) = 0;
+            virtual AudioBase * norm(float start, float end) = 0;
 
             // fade in 
-            virtual AudioBase & fadeIn() = 0;
+            virtual AudioBase * fadeIn() = 0;
 
             // fade out
-            virtual AudioBase & fadeOut() = 0;
+            virtual AudioBase * fadeOut() = 0;
     }; 
 }
 #endif
