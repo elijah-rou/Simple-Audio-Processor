@@ -13,6 +13,7 @@ namespace RSSELI007{
             case 8:{
                 switch(channels){
                     case 1:{
+                        //std::cout << "int8_t, mono" << std::endl;
                         RSSELI007::Audio<int8_t, 1> * a = new RSSELI007::Audio<int8_t, 1>(filename, rate);
                         return *a;
                     }

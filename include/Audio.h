@@ -14,36 +14,40 @@ namespace RSSELI007{
             Audio() = delete;
             Audio(std::string filename, int samplePsec)
             :   AudioBase(samplePsec, filename){
-                std::fstream file("input/"+AudioBase::filename, std::ios::binary);
-                if(file.good()){
+                std::ifstream file(AudioBase::filename, std::ios::binary);
+                std::cout << "Constructing audio " << AudioBase::filename << std::endl;
+                if(file.is_open()){
                     file.seekg(0, std::ios::end);
                     size_t size = file.tellg();
+                    std::cout << size << " bits" << std::endl;
                     file.seekg(0, std::ios::beg);
-                    sample_type * temp;
-                    // need to read in manaully
-                    for(int i=0; i<size; i+=2){
+                    sample_type * temp = new sample_type[size];
+                    file.read(reinterpret_cast<char *>(temp), size);
+                    for(int i=0; i<size; ++i){
                         data.push_back(temp[i]);
                     }
+                    delete [] temp;
                 }
+                std::cout << "Completed construction" << std::endl;
             }
 
             ~Audio(){
                 this->AudioBase::sampleRate = 0;
             }
 
-            Audio(const Audio & audio)
+            Audio(const Audio<sample_type, channel> & audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename){
                 this->data = std::vector<sample_type>(audio.data.size());
                 copy(audio.data.begin(), audio.data.end(), audio.data.size());
             }
-            Audio(Audio && audio)
+            Audio(Audio<sample_type, channel> && audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename),
                 data(audio.data){
                 audio.sampleRate = 0;
                 audio.data = NULL;
             }
 
-            Audio & operator=(const Audio & audio){
+            Audio<sample_type, channel> & operator=(const Audio<sample_type, channel> & audio){
                 if(this != &audio){
                     this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
                     this->AudioBase::filename = audio.AudioBase::filename;
@@ -53,7 +57,7 @@ namespace RSSELI007{
                 return *this;
             }
 
-            Audio & operator=(Audio & audio){
+            Audio<sample_type, channel> & operator=(Audio<sample_type, channel> & audio){
                 if(this != &audio){
                     this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
                     this->AudioBase::filename = std::move(audio.AudioBase::filename);
@@ -66,7 +70,14 @@ namespace RSSELI007{
 
             // write to output file
             virtual void write(std::string outputFile) {
-
+                std::cout << "Writing file to output/" << std::endl;
+                std::ofstream file("output/" + outputFile + ".raw", std::ios::binary);
+                if(file.good()){
+                    for(sample_type s : data){
+                        std::cout << s << std::endl;
+                        file << s;
+                    }
+                }
             }
 
             // add two audio clips
@@ -95,8 +106,10 @@ namespace RSSELI007{
             }
 
             // reverse audio
-            virtual AudioBase & rev() {
-                
+            virtual Audio<sample_type, channel> & rev() {
+                //Audio<sample_type, channel> * a = new Audio<sample_type, channel>(*this);
+                //return *a; 
+                //return new Audio<sample_type, channel>(*this);
             }
 
             // root-mean-square of audio
@@ -154,6 +167,7 @@ namespace RSSELI007{
             }
 
             Audio & operator=(const Audio & audio){
+                std::cout << "Copy assignment" <<  std::endl;
                 if(this != &audio){
                     this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
                     this->AudioBase::filename = audio.AudioBase::filename;
@@ -205,7 +219,7 @@ namespace RSSELI007{
 
             // reverse audio
             virtual AudioBase & rev() {
-                
+                 
             }
 
             // root-mean-square of audio
