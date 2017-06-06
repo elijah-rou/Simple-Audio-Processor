@@ -2,7 +2,7 @@ CC = g++
 CC_FLAGS = -c -Wall -o 
 LD_FLAGS = -o
 SRC_FILES = $(wildcard src/*.cpp)
-TEST_FILES = $(wildcard test/*.cpp) src/Audio*
+TEST_FILES = $(wildcard test/*.cpp)
 OBJ_FILES = $(addprefix obj/,$(notdir $(SRC_FILES:.cpp=.o)))
 OUT = samp
 
@@ -29,5 +29,5 @@ quick:
 	
 test: $(OBJ_FILES)
 	$(CC) $(TEST_FILES) -o bin/test --std=c++11
-	bin/test
-
+	bin/test $(args)
+	rm output/test.raw

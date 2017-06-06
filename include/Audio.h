@@ -68,16 +68,24 @@ namespace RSSELI007{
                 return *this;
             }
 
+            virtual int dataPieces(){
+                return data.size();
+            }
+
             // write to output file
             virtual void write(std::string outputFile) {
-                std::cout << "Writing file to output/" << std::endl;
+                std::cout << "Writing file to output/" << std::endl << std::endl;
                 std::ofstream file("output/" + outputFile + ".raw", std::ios::binary);
                 if(file.good()){
                     for(sample_type s : data){
-                        std::cout << s << std::endl;
+                        //std::cout << s << std::endl;
                         file << s;
                     }
                 }
+            }
+
+            virtual AudioBase & operator+=(const AudioBase & audio){
+
             }
 
             // add two audio clips
@@ -187,8 +195,15 @@ namespace RSSELI007{
                 }
                 return *this;
             }
+
+            virtual int dataPieces(){
+                return data.size()*2;
+            }
             // write to output file
             virtual void write(std::string outputFile) {
+
+            }
+            virtual AudioBase & operator+=(const AudioBase & audio){
 
             }
 

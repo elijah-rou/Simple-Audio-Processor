@@ -18,6 +18,20 @@ namespace RSSELI007{
                 sampleRate = 0;
                 filename = "";
             }
+
+            // getters
+            int getSampleRate(){
+                return this->sampleRate;
+            }
+            std::string getFilename(){
+                return this->filename;
+            }
+            virtual int dataPieces() = 0;
+
+            //OVERLOAD
+            virtual AudioBase & operator+=(const AudioBase & audio) = 0;
+
+
             // write to output file
             virtual void write(std::string outputFile) = 0;
 
