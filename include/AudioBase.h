@@ -30,7 +30,7 @@ namespace RSSELI007{
             std::string getFilename() const{
                 return this->filename;
             }
-            virtual int dataPieces() = 0;
+            virtual int dataPieces() const = 0;
 
             //OVERLOAD
 
@@ -66,13 +66,13 @@ namespace RSSELI007{
             virtual void write(std::string outputFile) = 0;
 
             // add samples over range
-            virtual AudioBase * radd(const AudioBase * audio, int start, int end) = 0;
+            virtual AudioBase * radd(const AudioBase & audio, const std::pair<int, int> range) = 0;
 
             // root-mean-square of audio
-            virtual AudioBase * rms() = 0;
+            virtual float rms() = 0;
 
             // normalise over range
-            virtual AudioBase * norm(float start, float end) = 0;
+            virtual AudioBase * norm(const std::pair<float, float> scaleFactor) = 0;
 
             // fade in 
             virtual AudioBase * fadeIn() = 0;

@@ -25,7 +25,8 @@ run:
 
 quick:
 	@make
-	bin/$(OUT) -r 44100 -b 8 -c 1 -o outQuick -rev input/beez18sec_44100_signed_8bit_mono.raw
+	bin/$(OUT) -r 44100 -b 8 -c 1 -o outQuick8 -rev input/beez18sec_44100_signed_8bit_mono.raw
+	bin/$(OUT) -r 44100 -b 16 -c 1 -o outQuick16 -rev input/beez18sec_44100_signed_16bit_mono.raw
 	
 test: $(OBJ_FILES)
 	$(CC) $(TEST_FILES) -o bin/test --std=c++11

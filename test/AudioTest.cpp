@@ -2,8 +2,6 @@
 #include "../include/catch.hpp"
 
 #include <iostream>
-#include <fstream>
-#include <typeinfo>
 #include "../include/Audio.h"
 #include "../include/audioUtil.h"
 
@@ -22,6 +20,7 @@ TEST_CASE("MONO: Audio template Construction", "[constructors]"){
         a->write("test");
         AudioBase * test = createAudio(44100, 8, 1, "output/test.raw");
         REQUIRE(a->dataPieces() == test->dataPieces());
+        REQUIRE(*test == *a);
         delete a;
         delete test;
 

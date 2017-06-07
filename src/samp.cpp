@@ -7,7 +7,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-    RSSELI007::clear();
+    //RSSELI007::clear();
     // can handle multiple commands for ease of use
     int r = 0;
     int b = 0;
@@ -70,7 +70,8 @@ int main(int argc, char* argv[]){
                     param_2 = atoi(argv[i+2]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+4]);
-                    result = song_1->radd(song_2, (int)param_1, (int)param_2);
+                    std::pair<int, int> range(param_1, param_2);
+                    result = song_1->radd(*song_2, range);
                     result->write(o);
                     break;
                 }
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-v"){
-                    std::cout << "Volume over range" << std::endl;
+                    std::cout << "Volume scale (L/R)" << std::endl;
                     param_1 = atoi(argv[i+1]);
                     param_2 = atoi(argv[i+2]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
@@ -101,16 +102,16 @@ int main(int argc, char* argv[]){
                 else if (arg == "-rms"){
                     std::cout << "Root-Mean-Square of audio file" << std::endl;
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+1]);
-                    result = song_1->rms();
-                    result->write(o);
+                    std::cout << "The Root-Mean-Square value of the audio is: " << song_1->rms() << std::endl;
                     break;
                 }
                 else if (arg == "-norm"){
-                    std::cout << "Normalising over range" << std::endl;
+                    std::cout << "Normalising scale" << std::endl;
                     param_1 = atoi(argv[i+1]);
                     param_2 = atoi(argv[i+2]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
-                    result = song_1->norm(param_1, param_2);
+                    std::pair<float, float> scaleFactor(param_1, param_2);
+                    result = song_1->norm(scaleFactor);
                     result->write(o);
                     break;
                 }
