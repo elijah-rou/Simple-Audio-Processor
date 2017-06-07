@@ -34,38 +34,60 @@ namespace RSSELI007{
             ~Audio(){
                 this->AudioBase::sampleRate = 0;
             }
+            
+            Audio(const AudioBase & audio)
+            :   AudioBase(audio.getSampleRate(), audio.getFilename()){
+                std::cout << "Constructing copy " << AudioBase::filename << std::endl;
+                const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
+                //this->data = std::vector<sample_type>(a.data.size());
+                //copy(a.data.begin(), a.data.end(), a.data.size())
+                for(sample_type s : a.data){
+                    this->data.push_back(s);
+                }
+                std::cout << "Completed copy" << std::endl;
+            }
 
+            /*
             Audio(const Audio<sample_type, channel> & audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename){
                 this->data = std::vector<sample_type>(audio.data.size());
-                copy(audio.data.begin(), audio.data.end(), audio.data.size());
+                //copy(audio.data.begin(), audio.data.end(), audio.data.size())
+                for(sample_type s : audio.data){
+                    this->data.push_back(s);
+                }
             }
+            */
+
             Audio(Audio<sample_type, channel> && audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename),
-                data(audio.data){
+                data(std::move(audio.data)){
                 audio.sampleRate = 0;
-                audio.data = NULL;
+                delete audio;
             }
 
             virtual AudioBase & operator=(const AudioBase & audio){
+                std::cout << "Copy assignment" << std::endl;
                 if(this != &audio){
-                    Audio<sample_type, channel> a = dynamic_cast<Audio<sample_type, channel> >audio;
+                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                     this->AudioBase::sampleRate = a.AudioBase::sampleRate;
                     this->AudioBase::filename = a.AudioBase::filename;
                     this->data = std::vector<sample_type>(a.data.size());
-                    copy(a.data.begin(), a.data.end(), a.data.size());
+                    //copy(a.data.begin(), a.data.end(), a.data.size());
+                    for(sample_type s : a.data){
+                        this->data.push_back(s);
+                    }
+                    std::cout << "Completed copy assignment" << std::endl;
                 }
                 return *this;
             }
 
             virtual AudioBase & operator=(AudioBase && audio){
                 if(this != &audio){
-                    Audio<sample_type, channel> a = dynamic_cast<Audio<sample_type, channel> >audio;
+                    Audio<sample_type, channel> & a = dynamic_cast<Audio<sample_type, channel>&>(audio);
                     this->AudioBase::sampleRate = a.AudioBase::sampleRate;
                     this->AudioBase::filename = std::move(a.AudioBase::filename);
                     this->data = a.data;
-                    audio.sampleRate = 0;
-                    audio.data = NULL;
+                    a.sampleRate = 0;
                 }
                 return *this;
             }
@@ -124,6 +146,22 @@ namespace RSSELI007{
             virtual AudioBase * operator!(){
 
             }
+            
+            // equality
+            virtual bool operator==(const AudioBase & audio){
+                if(this != &audio){
+                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
+                    if(this->AudioBase::sampleRate == a.AudioBase::sampleRate 
+                    && this->AudioBase::filename == a.AudioBase::filename){
+                        for(int i = 0; i<this->data.size(); ++i){
+                            if(this->data[i] != a.data[i]){
+                                return false;
+                            }
+                        }
+                    }
+                }
+                return true;;
+            }
 
             // METHODS
 
@@ -154,6 +192,7 @@ namespace RSSELI007{
  
    };
 
+    /*
     template <typename sample_type> class Audio<sample_type, 2> : public AudioBase{
         private:
             std::vector<std::pair<sample_type, sample_type> > data;
@@ -190,21 +229,25 @@ namespace RSSELI007{
             virtual AudioBase & operator=(const AudioBase & audio){
                 std::cout << "Copy assignment" <<  std::endl;
                 if(this != &audio){
-                    this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
-                    this->AudioBase::filename = audio.AudioBase::filename;
-                    this->data = std::vector<sample_type>(audio.data.size());
-                    copy(audio.data.begin(), audio.data.end(), audio.data.size());
+                    const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
+                    this->AudioBase::sampleRate = a.AudioBase::sampleRate;
+                    this->AudioBase::filename = a.AudioBase::filename;
+                    this->data = std::vector<std::pair<sample_type, sample_type> >(a.data.size());
+                    //copy(a.data.begin(), a.data.end(), a.data.size());
+                    for(std::pair<sample_type, sample_type> s : a.data){
+                        this->data.push_back(s);
+                    }
                 }
                 return *this;
             }
 
             virtual AudioBase & operator=(AudioBase && audio){
                 if(this != &audio){
-                    this->AudioBase::sampleRate = audio.AudioBase::sampleRate;
-                    this->AudioBase::filename = std::move(audio.AudioBase::filename);
-                    this->data = audio.data;
-                    audio.sampleRate = 0;
-                    audio.data = NULL;
+                    Audio<sample_type, 2> & a = dynamic_cast<Audio<sample_type, 2>&>(audio);
+                    this->AudioBase::sampleRate = a.AudioBase::sampleRate;
+                    this->AudioBase::filename = std::move(a.AudioBase::filename);
+                    this->data = a.data;
+                    a.sampleRate = 0;
                 }
                 return *this;
             }
@@ -256,6 +299,11 @@ namespace RSSELI007{
 
             }
 
+            // equality
+            virtual bool operator==(const AudioBase & audio){
+                
+            }
+
             // METHODS
 
             // add samples over range
@@ -283,5 +331,6 @@ namespace RSSELI007{
                 
             }
     };
+    */
 }
 #endif

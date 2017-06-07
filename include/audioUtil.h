@@ -1,7 +1,6 @@
 #ifndef AUDIOUTIL_H
 #define AUDIOUTIL_H
 
-#include <iostream>
 #include "../include/Audio.h"
 
 namespace RSSELI007{

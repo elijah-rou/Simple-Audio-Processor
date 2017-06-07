@@ -24,10 +24,10 @@ namespace RSSELI007{
             virtual AudioBase & operator=(AudioBase && audio) = 0;
 
             // getters
-            int getSampleRate(){
+            int getSampleRate() const{
                 return this->sampleRate;
             }
-            std::string getFilename(){
+            std::string getFilename() const{
                 return this->filename;
             }
             virtual int dataPieces() = 0;
@@ -52,6 +52,12 @@ namespace RSSELI007{
 
             // reverse
             virtual AudioBase * operator!() = 0;
+
+            // equality
+            virtual bool operator==(const AudioBase & audio) = 0;
+            virtual bool operator!=(const AudioBase & audio){
+                return !(*this==audio);
+            }
 
         
             //METHODS
