@@ -15,11 +15,11 @@ namespace RSSELI007{
             Audio(std::string filename, int samplePsec)
             :   AudioBase(samplePsec, filename){
                 std::ifstream file(AudioBase::filename, std::ios::binary);
-                std::cout << "Constructing audio " << AudioBase::filename << std::endl;
+                //std::cout << "Constructing audio " << AudioBase::filename << std::endl;
                 if(file.is_open()){
                     file.seekg(0, std::ios::end);
                     size_t size = file.tellg();
-                    std::cout << size << " bits" << std::endl;
+                    //std::cout << size << " bits" << std::endl;
                     file.seekg(0, std::ios::beg);
                     sample_type * temp = new sample_type[size];
                     file.read(reinterpret_cast<char *>(temp), size);
@@ -28,7 +28,7 @@ namespace RSSELI007{
                     }
                     delete [] temp;
                 }
-                std::cout << "Completed construction" << std::endl;
+                //std::cout << "Completed construction" << std::endl;
             }
 
             ~Audio(){
@@ -37,26 +37,24 @@ namespace RSSELI007{
             
             Audio(const AudioBase & audio)
             :   AudioBase(audio.getSampleRate(), audio.getFilename()){
-                std::cout << "Constructing copy " << AudioBase::filename << std::endl;
+                //std::cout << "Constructing copy " << AudioBase::filename << std::endl;
                 const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                 //this->data = std::vector<sample_type>(a.data.size());
                 //copy(a.data.begin(), a.data.end(), a.data.size())
                 for(sample_type s : a.data){
                     this->data.push_back(s);
                 }
-                std::cout << "Completed copy" << std::endl;
+                //std::cout << "Completed copy" << std::endl;
             }
 
-            /*
+            
             Audio(const Audio<sample_type, channel> & audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename){
-                this->data = std::vector<sample_type>(audio.data.size());
-                //copy(audio.data.begin(), audio.data.end(), audio.data.size())
                 for(sample_type s : audio.data){
                     this->data.push_back(s);
                 }
             }
-            */
+            
 
             Audio(Audio<sample_type, channel> && audio)
             :   AudioBase(audio.AudioBase::sampleRate, audio.AudioBase::filename),
@@ -66,7 +64,8 @@ namespace RSSELI007{
             }
 
             virtual AudioBase & operator=(const AudioBase & audio){
-                std::cout << "Copy assignment" << std::endl;
+                // NOT WORKING
+                //std::cout << "Copy assignment" << std::endl;
                 if(this != &audio){
                     const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                     this->AudioBase::sampleRate = a.AudioBase::sampleRate;
@@ -76,12 +75,13 @@ namespace RSSELI007{
                     for(sample_type s : a.data){
                         this->data.push_back(s);
                     }
-                    std::cout << "Completed copy assignment" << std::endl;
+                    //std::cout << "Completed copy assignment" << std::endl;
                 }
                 return *this;
             }
 
             virtual AudioBase & operator=(AudioBase && audio){
+                // NOT WORKING
                 if(this != &audio){
                     Audio<sample_type, channel> & a = dynamic_cast<Audio<sample_type, channel>&>(audio);
                     this->AudioBase::sampleRate = a.AudioBase::sampleRate;
@@ -98,7 +98,7 @@ namespace RSSELI007{
 
             // write to output file
             virtual void write(std::string outputFile) {
-                std::cout << "Writing file to output/" << std::endl << std::endl;
+                //std::cout << "Writing file to output/" << std::endl << std::endl;
                 std::ofstream file("output/" + outputFile + ".raw", std::ios::binary);
                 if(file.good()){
                     for(sample_type s : data){
@@ -144,7 +144,9 @@ namespace RSSELI007{
 
             // reverse
             virtual AudioBase * operator!(){
-
+                Audio<sample_type, channel> * result = new Audio<sample_type, channel>(*this);
+                std::reverse(result->data.begin(), result->data.end());
+                return result;
             }
             
             // equality
