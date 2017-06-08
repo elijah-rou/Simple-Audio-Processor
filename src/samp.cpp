@@ -7,7 +7,7 @@
 using namespace std;
 
 int main(int argc, char* argv[]){
-    //RSSELI007::clear();
+    RSSELI007::clear();
     // can handle multiple commands for ease of use
     int r = 0;
     int b = 0;
@@ -129,10 +129,6 @@ int main(int argc, char* argv[]){
                     result->write(o);
                     break;
                 }
-            }
-            else{
-                //std::cout << "Incorrect initialisation arguments." << std::endl;
-                //break;
             }
         }
         catch(int e){

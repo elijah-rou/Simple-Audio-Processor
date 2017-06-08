@@ -70,37 +70,136 @@ TEST_CASE("MONO: Audio template Construction", "[constructors]"){
 
 TEST_CASE("MONO: Audio Overloads", "[overloads]"){
     SECTION("Addition"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        AudioBase * b = createAudio(44100, 8, 1, "input/test_2.raw");
+        AudioBase * result = *a+*b;
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        for(int8_t i : v){
+            REQUIRE(i == 'a');
+        }
+        delete a;
+        delete b;
+        delete result;
     }
 
     SECTION("Volume Scale"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        std::pair<float, float> range(0.5, 1);
+        AudioBase * result = *a*range;
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        for(int i = 0; i < v.size(); ++i){
+            if(i % 2 == 0){
+                REQUIRE(v[i] == '1'/2);
+            }
+            else{
+                REQUIRE(v[i] == '0'/2);
+            }
+        }
     }
 
     SECTION("Concatenation"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        AudioBase * b = createAudio(44100, 8, 1, "input/test_2.raw");
+        AudioBase * result = *a|*b;
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        REQUIRE(result->dataPieces() == 16);
+        for(int i = 0; i < 8; ++i){
+            if(i % 2 == 0){
+                REQUIRE(v[i] == '0');
+            }
+            else{
+                REQUIRE(v[i] == '1');
+            }
+        }
+        for(int i = 8; i < v.size(); ++i){
+            if(i % 2 == 0){
+                REQUIRE(v[i] == '1');
+            }
+            else{
+                REQUIRE(v[i] == '0');
+            }
+        }
+        delete a;
+        delete b;
+        delete result;
     }
 
     SECTION("Splice"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        std::pair<int, int> range(1, 3);
+        AudioBase * result = *a^range;
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        REQUIRE(result->dataPieces() == 5);
+        for(int i = 0; i < v.size(); ++i){
+            if(i == 0){
+                REQUIRE(v[i] == '0');
+            }
+            else if(i % 2 == 0){
+                REQUIRE(v[i] == '1');
+            }
+            else{
+                REQUIRE(v[i] == '0');
+            }
+        }
+        delete a;
+        delete result;
     }
 
     SECTION("Reverse"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        AudioBase * result = !*a;
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        for(int i = 0; i < v.size(); ++i){
+            if(i % 2 == 0){
+                REQUIRE(v[i] == '1');
+            }
+            else{
+                REQUIRE(v[i] == '0');
+            }
+        }
+        delete a;
+        delete result;
     }
 
     SECTION("Equality"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        AudioBase * result = !*a;
+        AudioBase * b = createAudio(44100, 8, 1, "input/test_2.raw");
+        REQUIRE(*result == *b);
+        delete a;
+        delete result;
+        delete b;
     }
 }
 
 TEST_CASE("MONO: Audio Methods", "[methods]"){
     SECTION("Range Add"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_1.raw");
+        AudioBase * b = createAudio(44100, 8, 1, "input/test_2.raw");
+        std::pair<int, int> range(1, 3);
+        AudioBase * result = a->radd(*b, range);
+        const vector<int8_t> v = dynamic_cast<Audio<int8_t, 1>*>(result)->getData();
+        for(int i = 0; i < v.size(); ++i){
+            if(i == 1 || i == 2 || i == 3){
+                REQUIRE(v[i] == 'a');
+            }
+            else if(i % 2 == 0){
+                REQUIRE(v[i] == '1');
+            }
+            else{
+                REQUIRE(v[i] == '0');
+            }
+        }
+        delete a;
+        delete b;
+        delete result;
     }
 
     SECTION("Root-Mean-Square"){
-
+        AudioBase * a = createAudio(44100, 8, 1, "input/test_3.raw");
+        float result = a->rms();
+        REQUIRE(result == 40);
+        delete a;
     }
 
     SECTION("Normalise over range"){
@@ -112,10 +211,6 @@ TEST_CASE("MONO: Audio Methods", "[methods]"){
     }
 
     SECTION("Fade Out"){
-
-    }
-
-    SECTION("Equality"){
 
     }
 }
