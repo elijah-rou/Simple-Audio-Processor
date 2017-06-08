@@ -17,7 +17,7 @@ clean:
 	-rm obj/*.o
 	-rm bin/$(OUT)
 	-rm bin/test
-	-rm bin/output/*
+	-rm output/*
 
 run:
 	@make
