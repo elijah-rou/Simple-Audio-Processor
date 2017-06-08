@@ -499,20 +499,18 @@ namespace RSSELI007{
             
             // equality
             virtual bool operator==(const AudioBase & audio){
-                /*
-                if(this != &audio && typeid(audio) == typeid(Audio<sample_type, channel>)){
-                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
+                if(this != &audio && typeid(audio) == typeid(Audio<sample_type, 2>)){
+                    const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
                     if(this->AudioBase::sampleRate == a.AudioBase::sampleRate 
                     && this->AudioBase::filename == a.AudioBase::filename){
                         for(int i = 0; i<this->data.size(); ++i){
-                            if(this->data[i] != a.data[i]){
+                            if(this->data[i].first != a.data[i].first && this->data[i].second != a.data[i].second){
                                 return false;
                             }
                         }
                     }
                 }
                 return true;
-                */
             }
 
             // METHODS

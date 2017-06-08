@@ -17,8 +17,8 @@ TEST_CASE("MONO: Audio template Construction", "[constructors]"){
         REQUIRE(a->getFilename() == "input/beez18sec_44100_signed_8bit_mono.raw");
         REQUIRE(typeid(*a) == typeid(Audio<int8_t, 1>));
 
-        a->write("test");
-        AudioBase * test = createAudio(44100, 8, 1, "output/test.raw");
+        a->write("testMono");
+        AudioBase * test = createAudio(44100, 8, 1, "output/testMono.raw");
         REQUIRE(a->dataPieces() == test->dataPieces());
         REQUIRE(*test == *a);
         delete a;
@@ -242,51 +242,75 @@ TEST_CASE("MONO: Audio Methods", "[methods]"){
 
 TEST_CASE("STEREO: Audio template Construction", "[constructors]"){
     SECTION("CONSTRUCT and WRITE"){
-        /*
-        AudioBase * a = createAudio(44100, 8, 1, "input/beez18sec_44100_signed_8bit_mono.raw");
+
+        AudioBase * a = createAudio(44100, 8, 2, "input/beez18sec_44100_signed_8bit_stereo.raw");
 
         REQUIRE(a->getSampleRate() == 44100);
-        REQUIRE(a->getFilename() == "input/beez18sec_44100_signed_8bit_mono.raw");
-        REQUIRE(typeid(*a) == typeid(Audio<int8_t, 1>));
+        REQUIRE(a->getFilename() == "input/beez18sec_44100_signed_8bit_stereo.raw");
+        REQUIRE(typeid(*a) == typeid(Audio<int8_t, 2>));
 
-        a->write("test");
-        AudioBase * test = createAudio(44100, 8, 1, "output/test.raw");
+        a->write("testStereo");
+        AudioBase * test = createAudio(44100, 8, 2, "output/testStereo.raw");
         REQUIRE(a->dataPieces() == test->dataPieces());
+        
         delete a;
         delete test;
 
-        AudioBase * b = createAudio(44100, 16, 1, "input/beez18sec_44100_signed_16bit_mono.raw");
-        REQUIRE(typeid(*b) == typeid(Audio<int16_t, 1>));
+        AudioBase * b = createAudio(44100, 16, 2, "input/beez18sec_44100_signed_16bit_stereo.raw");
+        REQUIRE(typeid(*b) == typeid(Audio<int16_t, 2>));
         delete b;
 
         cout << endl;
-        */
+        
         
     }
 
     SECTION("COPY"){
-        /*
-        AudioBase * a = createAudio(44100, 8, 1, "input/beez18sec_44100_signed_8bit_mono.raw");
-        AudioBase * b = new Audio<int8_t, 1>(*a);
+        
+        AudioBase * a = createAudio(44100, 16, 2, "input/beez18sec_44100_signed_16bit_stereo.raw");
+        AudioBase * b = new Audio<int16_t, 2>(*a);
         REQUIRE(b != a);
         REQUIRE(typeid(*b) == typeid(*a));
         REQUIRE(*b==*a);
-        
         cout << endl;
-        */
+        
         
     }
 
     SECTION("COPY Assignment"){
-
+        Audio<int16_t, 2> a("input/beez18sec_44100_signed_16bit_stereo.raw", 44100);
+        Audio<int16_t, 2> b = a;
+        REQUIRE(&b != &a);
+        REQUIRE(typeid(b) == typeid(a));
+        REQUIRE(b==a);
+        
+        cout << endl;
     }
     
     SECTION("MOVE"){
-       
+        Audio<int16_t, 2> a("input/beez18sec_44100_signed_16bit_stereo.raw", 44100);
+        Audio<int16_t, 2> aCopy(a);
+        Audio<int16_t, 2> b(std::move(a));
+        REQUIRE(&b != &a);
+        REQUIRE(typeid(b) == typeid(aCopy));
+        REQUIRE(a.getSampleRate() == 0);
+        REQUIRE(a.getFilename() == "");
+        REQUIRE(a.getCutoff() == 0);
+        REQUIRE(a.getData().size() == 0);
+        REQUIRE(b==aCopy);
     }
 
     SECTION("MOVE Assignment"){
-        
+        Audio<int16_t, 2> a("input/beez18sec_44100_signed_16bit_stereo.raw", 44100);
+        Audio<int16_t, 2> aCopy(a);
+        Audio<int16_t, 2> b = std::move(a);
+        REQUIRE(&b != &a);
+        REQUIRE(typeid(b) == typeid(aCopy));
+        REQUIRE(a.getSampleRate() == 0);
+        REQUIRE(a.getFilename() == "");
+        REQUIRE(a.getCutoff() == 0);
+        REQUIRE(a.getData().size() == 0);
+        REQUIRE(b==aCopy);
     }
     
 }

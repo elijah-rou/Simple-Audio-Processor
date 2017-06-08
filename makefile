@@ -31,4 +31,3 @@ quick:
 test: $(OBJ_FILES)
 	$(CC) $(TEST_FILES) -o bin/test --std=c++11
 	bin/test $(args)
-	rm output/test.raw
