@@ -69,12 +69,15 @@ int main(int argc, char* argv[]){
                 else if (arg == "-radd"){
                     // NOT WORKING - has to work over time
                     std::cout << "Adding audio files over range" << std::endl;
-                    param_1 = atoi(argv[i+1]);
-                    param_2 = atoi(argv[i+2]);
-                    song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
-                    song_1 = RSSELI007::createAudio(r, b, c, argv[i+4]);
-                    std::pair<int, int> range(param_1, param_2);
-                    result = song_1->radd(*song_2, range);
+                    param_1 = atof(argv[i+1]);
+                    param_2 = atof(argv[i+2]);
+                    float param_3 = atof(argv[i+3]);
+                    float param_4 = atof(argv[i+4]);
+                    song_1 = RSSELI007::createAudio(r, b, c, argv[i+5]);
+                    song_2 = RSSELI007::createAudio(r, b, c, argv[i+6]);
+                    std::pair<float, float> range1(param_1, param_2);
+                    std::pair<float, float> range2(param_3, param_4);
+                    result = song_1->radd(*song_2, range1, range2);
                     result->write(o);
                     break;
                 }
@@ -114,6 +117,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-norm"){
+                    // not tested in main
                     std::cout << "Normalising scale" << std::endl;
                     param_1 = atof(argv[i+1]);
                     param_2 = atof(argv[i+2]);
