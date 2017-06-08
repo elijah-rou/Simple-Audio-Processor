@@ -6,6 +6,7 @@
 #include <cmath>
 #include <typeinfo>
 #include <numeric>
+#include <algorithm>
 #include "../include/AudioBase.h"
 
 namespace RSSELI007{
