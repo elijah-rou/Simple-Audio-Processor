@@ -12,11 +12,14 @@ namespace RSSELI007{
 
     template <typename sample_type, int channel=1> struct Normalise{
         float rmsScale;
-        Normalise(float newRMS, float oldRMS){
+        int cutoff;
+        Normalise(float newRMS, float oldRMS, int cutoff){
             rmsScale = newRMS/oldRMS;
+            this->cutoff = cutoff;
         }
         sample_type operator()(sample_type s){
             s *= rmsScale;
+            s = s > cutoff ? cutoff : s;
             return s;
         }
     };
@@ -26,6 +29,7 @@ namespace RSSELI007{
         private:
             std::vector<sample_type> data;
             int cutoff;
+
         public:
             Audio() = delete;
             Audio(std::string filename, int samplePsec)
@@ -35,7 +39,7 @@ namespace RSSELI007{
                 if(file.is_open()){
                     while(file){
                         sample_type s = 0;
-                        s |= (unsigned char)file.get();
+                        s |= static_cast<char>(file.get());
                         for(int i = 0; i < sizeof(sample_type)-1; ++i){
                             s |= file.get() << 8;
                         }
@@ -190,7 +194,7 @@ namespace RSSELI007{
             //cut
             virtual AudioBase & operator^=(const std::pair<int, int> range){
                 if(range.first >= 0 && range.second < this->dataPieces()){
-                    this->data.erase(this->data.begin()+range.first*channel, this->data.begin()+(range.second+1)*channel);
+                    this->data.erase(this->data.begin()+range.first, this->data.begin()+(range.second+1));
                 }
                 return *this;
             }
@@ -240,45 +244,42 @@ namespace RSSELI007{
                     const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                     if(range1.first*this->AudioBase::sampleRate >= 0 
                     && range1.second*this->AudioBase::sampleRate+1 < result->dataPieces()){
-                        /*
-                        for(int i=range1.first*this->AudioBase::sampleRate; i<(int)(range1.second*this->AudioBase::sampleRate)+1; ++i){
-                            result->data[i] += a.data[i];
-                            result->data[i] = result->data[i] > result->cutoff ? result->cutoff : result->data[i];
+                        if(range2.first*this->AudioBase::sampleRate >= 0 
+                        && range2.second*this->AudioBase::sampleRate+1 < a.dataPieces()){
+                            if((int)((range1.second-range1.first)*this->AudioBase::sampleRate)
+                            == (int)((range2.second-range2.first)*a.AudioBase::sampleRate)){
+                                auto it = a.data.begin()+range2.first*this->AudioBase::sampleRate;
+                                for_each(result->data.begin()+range1.first*this->AudioBase::sampleRate, 
+                                        result->data.begin()+range1.second*this->AudioBase::sampleRate+1,
+                                            [&](sample_type & s){
+                                                s += *it;
+                                                s = s > result->cutoff ? result->cutoff : s;
+                                                ++it;
+                                            }
+                                        );
+                                std::vector<sample_type> v(result->data.begin()+(int)(range1.first*this->AudioBase::sampleRate), 
+                                    result->data.begin()+(int)(range1.second*this->AudioBase::sampleRate+1));
+                                result->data = v;
+                            }
                         }
-                        */
-                        auto it = a.data.begin()+range1.first*this->AudioBase::sampleRate;
-                        for_each(result->data.begin()+range1.first*this->AudioBase::sampleRate, 
-                                 result->data.begin()+range1.second*this->AudioBase::sampleRate+1,
-                                    [&](sample_type & s){
-                                        s += *it;
-                                        s = s > result->cutoff ? result->cutoff : s;
-                                        ++it;
-                                    }
-                                );
-                    }
+                    }  
                 }
                 return result;
             }
 
             // root-mean-square of audio
-            virtual float rms() {
-                std::vector<float> v;
-                for(sample_type s : this->data){
-                    v.push_back(s);
-                }
-                for_each(v.begin(), v.end(),
-                    [&](float & f){
-                        f *=f; 
-                    }
-                );
-                float result = std::accumulate(v.begin(), v.end(), 0);
-                return sqrt(result/v.size());
+            virtual std::pair<float, float> rms() {
+                long result = std::accumulate(this->data.begin(), this->data.end(), 0,
+                [] (long total, sample_type s){
+                    return total + s*s;
+                });
+                return std::make_pair(sqrt(result/this->dataPieces()), 0);
             }
 
             // normalise over range
             virtual AudioBase * norm(std::pair<float, float> requiredRMS) {
                 Audio<sample_type, channel> * result = new Audio<sample_type, channel>(*this);
-                Normalise<sample_type, channel> n(requiredRMS.first, result->rms());
+                Normalise<sample_type, channel> n(requiredRMS.first, result->rms().first, this->cutoff);
                 std::transform(result->data.begin(), result->data.end(), result->data.begin(), n);
                 return result;
             }
@@ -299,12 +300,16 @@ namespace RSSELI007{
    
     template <typename sample_type> struct Normalise<sample_type, 2>{
         std::pair<float, float> rmsScale;
-        Normalise(std::pair<float, float> newRMS, std::pair<float, float> oldRMS){
+        int cutoff;
+        Normalise(std::pair<float, float> newRMS, std::pair<float, float> oldRMS, int cutoff){
+            this->cutoff = cutoff;
             rmsScale =  std::pair<float, float>(newRMS.first/oldRMS.first,newRMS.second/oldRMS.second);
         }
-        sample_type operator()(std::pair<sample_type, sample_type> s){
+        std::pair<sample_type, sample_type> operator()(std::pair<sample_type, sample_type> s){
             s.first *= rmsScale.first;
             s.second *= rmsScale.second;
+            s.first = s.first > cutoff ? cutoff : s.first;
+            s.second = s.second > cutoff ? cutoff : s.second;
             return s;
         }
     };
@@ -388,7 +393,6 @@ namespace RSSELI007{
                     const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
                     this->AudioBase::sampleRate = a.AudioBase::sampleRate;
                     this->AudioBase::filename = a.AudioBase::filename;
-                    //this->data = std::vector<std::pair<sample_type, sample_type> >(a.data.size());
                     this->cutoff =a.cutoff;
                     for(std::pair<sample_type, sample_type> s : a.data){
                         this->data.push_back(s);
@@ -459,14 +463,14 @@ namespace RSSELI007{
 
             // volume factor
             virtual AudioBase & operator*=(std::pair<float, float> scaleFactor){
-                /*
-                if(scaleFactor.first >= 0 && scaleFactor.first <= 1){
+                if(scaleFactor.first >= 0 && scaleFactor.first <= 1 
+                && scaleFactor.second >= 0 && scaleFactor.second <= 1){
                     for(int i=0; i<this->dataPieces(); ++i){
-                        this->data[i] = (sample_type)(this->data[i]*scaleFactor.first);
+                        this->data[i].first = (sample_type)(this->data[i].first*scaleFactor.first);
+                        this->data[i].second = (sample_type)(this->data[i].second*scaleFactor.second);
                     }
                 }
                 return *this;
-                */
             }
             virtual AudioBase * operator*(std::pair<float, float> scaleFactor){
                 Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
@@ -476,15 +480,13 @@ namespace RSSELI007{
 
             // concatenate
             virtual AudioBase & operator|=(const AudioBase & audio){
-                /*
-                if(typeid(audio) == typeid(Audio<sample_type, channel>)){
-                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
-                    for(sample_type s : a.data){
+                if(typeid(audio) == typeid(Audio<sample_type, 2>)){
+                    const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
+                    for(std::pair<sample_type, sample_type> s : a.data){
                         this->data.push_back(s);
                     }
                 }
                 return *this;
-                */
             }
             virtual AudioBase * operator|(const AudioBase & audio){
                 Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
@@ -494,12 +496,10 @@ namespace RSSELI007{
 
             //cut
             virtual AudioBase & operator^=(const std::pair<int, int> range){
-                /*
                 if(range.first >= 0 && range.second < this->dataPieces()){
-                    this->data.erase(this->data.begin()+range.first*channel, this->data.begin()+(range.second+1)*channel);
+                    this->data.erase(this->data.begin()+range.first, this->data.begin()+(range.second+1));
                 }
                 return *this;
-                */
             }
             virtual AudioBase * operator^(const std::pair<int, int> range){
                 Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
@@ -541,45 +541,56 @@ namespace RSSELI007{
 
             // add samples over range
             virtual AudioBase * radd(const AudioBase & audio, const std::pair<float, float> range1, const std::pair<float, float> range2) {
-                /*
-                Audio<sample_type, channel> * result = new Audio<sample_type, channel>(*this);
-                if(typeid(audio) == typeid(Audio<sample_type, channel>)){
-                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
+                Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
+                if(typeid(audio) == typeid(Audio<sample_type, 2>)){
+                    const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
                     if(range1.first*this->AudioBase::sampleRate >= 0 
                     && range1.second*this->AudioBase::sampleRate+1 < result->dataPieces()){
-                        for(int i=range1.first*this->AudioBase::sampleRate; i<(int)(range1.second*this->AudioBase::sampleRate)+1; ++i){
-                            result->data[i] += a.data[i];
-                            result->data[i] = result->data[i] > result->cutoff ? result->cutoff : result->data[i];
+                        if(range2.first*this->AudioBase::sampleRate >= 0 
+                        && range2.second*this->AudioBase::sampleRate+1 < a.dataPieces()){
+                            if((int)((range1.second-range1.first)*this->AudioBase::sampleRate)
+                            == (int)((range2.second-range2.first)*a.AudioBase::sampleRate)){
+                                auto it = a.data.begin()+range2.first*this->AudioBase::sampleRate;
+                                for_each(result->data.begin()+range1.first*this->AudioBase::sampleRate, 
+                                        result->data.begin()+range1.second*this->AudioBase::sampleRate+1,
+                                            [&](std::pair<sample_type, sample_type> & s){
+                                                s.first += it->first;
+                                                s.second += it->second;
+                                                s.first = s.first > result->cutoff ? result->cutoff : s.first;
+                                                s.second = s.second > result->cutoff ? result->cutoff : s.second;
+                                                ++it;
+                                            }
+                                        );
+                                std::vector<std::pair<sample_type, sample_type> >  
+                                    v(result->data.begin()+(int)(range1.first*this->AudioBase::sampleRate), 
+                                    result->data.begin()+(int)(range1.second*this->AudioBase::sampleRate+1));
+                                result->data = v;
+                            }
                         }
-                    }
+                    }  
                 }
                 return result;
-                */
             }
 
             // root-mean-square of audio
-            virtual float rms() {
-                /*
-                std::vector<float> v;
-                for(sample_type s : this->data){
-                    v.push_back(s);
-                }
-                for(float & s : v){
-                    s *= s;
-                }
-                float result = std::accumulate(v.begin(), v.end(), 0);
-                return sqrt(result/v.size());
-                */
+            virtual std::pair<float, float> rms() {
+                long result1 = std::accumulate(this->data.begin(), this->data.end(), 0,
+                [] (long total, std::pair<sample_type, sample_type> s){
+                    return total + s.first*s.first;
+                });
+                long result2 = std::accumulate(this->data.begin(), this->data.end(), 0,
+                [] (long total,std::pair<sample_type, sample_type> s){
+                    return total + s.second*s.second;
+                });
+                return std::make_pair(sqrt(result1/this->dataPieces()), sqrt(result2/this->dataPieces()));
             }
 
             // normalise over range
             virtual AudioBase * norm(std::pair<float, float> requiredRMS) {
-                /*
-                Audio<sample_type, channel> * result = new Audio<sample_type, channel>(*this);
-                Normalise<sample_type, channel> n(requiredRMS.first, result->rms());
+                Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
+                Normalise<sample_type, 2> n(requiredRMS, result->rms(), this->cutoff);
                 std::transform(result->data.begin(), result->data.end(), result->data.begin(), n);
                 return result;
-                */
             }
 
             // fade in 

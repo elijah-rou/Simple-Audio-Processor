@@ -67,7 +67,7 @@ namespace RSSELI007{
             virtual AudioBase * radd(const AudioBase & audio, const std::pair<float, float> range1, const std::pair<float, float> range2) = 0;
 
             // root-mean-square of audio
-            virtual float rms() = 0;
+            virtual std::pair<float, float> rms() = 0;
 
             // normalise over range
             virtual AudioBase * norm(const std::pair<float, float> requiredRMS) = 0;
