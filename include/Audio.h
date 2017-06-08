@@ -40,7 +40,7 @@ namespace RSSELI007{
                 if(file.is_open()){
                     while(file){
                         sample_type s = 0;
-                        s |= static_cast<char>(file.get());
+                        s |= static_cast<unsigned char>(file.get());
                         for(int i = 0; i < sizeof(sample_type)-1; ++i){
                             s |= file.get() << 8;
                         }
