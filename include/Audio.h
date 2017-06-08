@@ -123,7 +123,8 @@ namespace RSSELI007{
 
             // write to output file
             virtual void write(std::string outputFile) {
-                std::ofstream file("output/" + outputFile + ".raw", std::ios::binary);
+                std::ofstream file("output/" + outputFile + "_" + std::to_string(this->AudioBase::sampleRate)
+                                  + "_" + std::to_string(sizeof(sample_type)*8) + "bit_mono.raw", std::ios::binary);
                 if(file.good()){
                     for(sample_type s : data){
                         unsigned char * c = (unsigned char *)&s;
@@ -208,7 +209,10 @@ namespace RSSELI007{
             
             // equality
             virtual bool operator==(const AudioBase & audio){
-                if(this != &audio && typeid(audio) == typeid(Audio<sample_type, channel>)){
+                if(this == &audio)
+                    return true;
+
+                if(typeid(audio) == typeid(Audio<sample_type, channel>)){
                     const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                     if(this->AudioBase::sampleRate == a.AudioBase::sampleRate 
                     && this->AudioBase::filename == a.AudioBase::filename){
@@ -218,8 +222,13 @@ namespace RSSELI007{
                             }
                         }
                     }
+                    return true;
                 }
-                return true;
+                return false;
+                
+            }
+            virtual bool operator!=(const AudioBase & audio){
+                return !(*this==audio);
             }
 
             // METHODS
@@ -231,10 +240,21 @@ namespace RSSELI007{
                     const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
                     if(range1.first*this->AudioBase::sampleRate >= 0 
                     && range1.second*this->AudioBase::sampleRate+1 < result->dataPieces()){
+                        /*
                         for(int i=range1.first*this->AudioBase::sampleRate; i<(int)(range1.second*this->AudioBase::sampleRate)+1; ++i){
                             result->data[i] += a.data[i];
                             result->data[i] = result->data[i] > result->cutoff ? result->cutoff : result->data[i];
                         }
+                        */
+                        auto it = a.data.begin()+range1.first*this->AudioBase::sampleRate;
+                        for_each(result->data.begin()+range1.first*this->AudioBase::sampleRate, 
+                                 result->data.begin()+range1.second*this->AudioBase::sampleRate+1,
+                                    [&](sample_type & s){
+                                        s += *it;
+                                        s = s > result->cutoff ? result->cutoff : s;
+                                        ++it;
+                                    }
+                                );
                     }
                 }
                 return result;
@@ -397,7 +417,8 @@ namespace RSSELI007{
 
             // write to output file
             virtual void write(std::string outputFile) {
-                std::ofstream file("output/" + outputFile + ".raw", std::ios::binary);
+                std::ofstream file("output/" + outputFile + "_" + std::to_string(this->AudioBase::sampleRate)
+                                  + "_" + std::to_string(sizeof(sample_type)*8) + "bit_stereo.raw", std::ios::binary);
                 if(file.good()){
                     for(std::pair<sample_type, sample_type> s : data){
                         // channel 1
@@ -417,22 +438,18 @@ namespace RSSELI007{
             //OVERLOADS
 
             // add
-            virtual AudioBase & operator+=(const AudioBase & audio){
-                /*
-                if(typeid(audio) == typeid(Audio<sample_type, channel>)){
-                    const Audio<sample_type, channel> & a = dynamic_cast<const Audio<sample_type, channel>&>(audio);
+            virtual AudioBase & operator+=(const AudioBase & audio){  
+                if(typeid(audio) == typeid(Audio<sample_type, 2>)){
+                    const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
                     if(this->dataPieces() == a.dataPieces()){
                         for(int i=0; i<this->dataPieces(); ++i){
-                            //std::cout << this->data[i] << " + " << a.data[i] << " = ";
-                            //std::cout << this->data[i] + a.data[i] << " or " ;
-                            this->data[i] += a.data[i];
-                            this->data[i] = this->data[i] > this->cutoff ? this->cutoff : this->data[i];
-                            //std::cout << this->data[i] << std::endl;
+                            this->data[i] = std::make_pair(this->data[i].first+a.data[i].first, this->data[i].second+a.data[i].second);
+                            this->data[i].first = this->data[i].first > this->cutoff ? this->cutoff : this->data[i].first;
+                            this->data[i].second = this->data[i].second > this->cutoff ? this->cutoff : this->data[i].second;
                         }
                     }
                 }
                 return *this;
-                */
             }
             virtual AudioBase * operator+(const AudioBase & audio){
                 Audio<sample_type, 2> * result = new Audio<sample_type, 2>(*this);
@@ -499,7 +516,10 @@ namespace RSSELI007{
             
             // equality
             virtual bool operator==(const AudioBase & audio){
-                if(this != &audio && typeid(audio) == typeid(Audio<sample_type, 2>)){
+                if(this == &audio)
+                    return true;
+
+                if(typeid(audio) == typeid(Audio<sample_type, 2>)){
                     const Audio<sample_type, 2> & a = dynamic_cast<const Audio<sample_type, 2>&>(audio);
                     if(this->AudioBase::sampleRate == a.AudioBase::sampleRate 
                     && this->AudioBase::filename == a.AudioBase::filename){
@@ -509,8 +529,12 @@ namespace RSSELI007{
                             }
                         }
                     }
+                    return true;
                 }
-                return true;
+                return false;
+            }
+            virtual bool operator!=(const AudioBase & audio){
+                return !(*this==audio);
             }
 
             // METHODS

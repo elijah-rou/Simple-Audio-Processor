@@ -55,9 +55,7 @@ namespace RSSELI007{
 
             // equality
             virtual bool operator==(const AudioBase & audio) = 0;
-            virtual bool operator!=(const AudioBase & audio){
-                return !(*this==audio);
-            }
+            virtual bool operator!=(const AudioBase & audio) = 0;
 
         
             //METHODS
