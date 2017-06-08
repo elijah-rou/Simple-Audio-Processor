@@ -143,7 +143,7 @@ namespace RSSELI007{
 
             // volume factor
             virtual AudioBase & operator*=(std::pair<float, float> scaleFactor){
-                if(scaleFactor.first > 0 && scaleFactor.first <= 1){
+                if(scaleFactor.first >= 0 && scaleFactor.first <= 1){
                     for(int i=0; i<this->dataPieces(); ++i){
                         this->data[i] = (sample_type)(this->data[i]*scaleFactor.first);
                     }

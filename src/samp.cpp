@@ -47,6 +47,7 @@ int main(int argc, char* argv[]){
             if(r != 0 && (b == 8 || b == 16) && (c == 1 || c == 2) && o != ""){  
                 std::cout << "Initialising operation: " << arg << std::endl;
                 if (arg == "-add"){
+                    // Mono: works
                     std::cout << "Adding audio files together" << std::endl;
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+1]);
                     song_2 = RSSELI007::createAudio(r, b, c, argv[i+2]);
@@ -55,6 +56,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-cut"){
+                    // Mono: works
                     std::cout << "Removing range from audio" << std::endl;
                     param_1 = atoi(argv[i+1]);
                     param_2 = atoi(argv[i+2]);
@@ -65,6 +67,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-radd"){
+                    // NOT WORKING - has to work over time
                     std::cout << "Adding audio files over range" << std::endl;
                     param_1 = atoi(argv[i+1]);
                     param_2 = atoi(argv[i+2]);
@@ -76,6 +79,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-cat"){
+                    // Mono: works
                     std::cout << "Concatenating audio files" << std::endl;
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+1]);
                     song_2 = RSSELI007::createAudio(r, b, c, argv[i+2]);
@@ -84,15 +88,18 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-v"){
+                    // Mono: works
                     std::cout << "Volume scale (L/R)" << std::endl;
-                    param_1 = atoi(argv[i+1]);
-                    param_2 = atoi(argv[i+2]);
+                    param_1 = atof(argv[i+1]);
+                    param_2 = atof(argv[i+2]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
                     std::pair<float, float> scaleFactor(param_1, param_2);
                     result = (*song_1)*(scaleFactor);
                     result->write(o);
+                    break;
                 }
                 else if (arg == "-rev"){
+                    // Mono: works
                     std::cout << "Reversing audio" << std::endl;
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+1]);
                     result = !*song_1;
@@ -100,6 +107,7 @@ int main(int argc, char* argv[]){
                     break;
                 }
                 else if (arg == "-rms"){
+                    // Mono: works
                     std::cout << "Root-Mean-Square of audio file" << std::endl;
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+1]);
                     std::cout << "The Root-Mean-Square value of the audio is: " << song_1->rms() << std::endl;
@@ -107,8 +115,8 @@ int main(int argc, char* argv[]){
                 }
                 else if (arg == "-norm"){
                     std::cout << "Normalising scale" << std::endl;
-                    param_1 = atoi(argv[i+1]);
-                    param_2 = atoi(argv[i+2]);
+                    param_1 = atof(argv[i+1]);
+                    param_2 = atof(argv[i+2]);
                     song_1 = RSSELI007::createAudio(r, b, c, argv[i+3]);
                     std::pair<float, float> scaleFactor(param_1, param_2);
                     result = song_1->norm(scaleFactor);
